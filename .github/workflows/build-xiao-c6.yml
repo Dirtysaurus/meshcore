@@ -1,0 +1,28 @@
+name: Build Xiao C6 Companion
+
+permissions:
+  contents: write
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone Repo
+        uses: actions/checkout@v4
+
+      - name: Setup Build Environment
+        uses: ./.github/actions/setup-build-environment
+
+      - name: Build Xiao C6 companion BLE
+        env:
+          FIRMWARE_VERSION: xiao-c6-manual
+        run: /usr/bin/env bash build.sh build-firmware Xiao_C6_companion_radio_ble_
+
+      - name: Upload Firmware Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: xiao-c6-companion-ble
+          path: out/
