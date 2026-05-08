@@ -28,12 +28,10 @@ public:
     setCpuFrequencyMhz(ESP32_CPU_FREQ);
   #endif
 
-  #ifdef PIN_VBAT_READ
+   #ifdef PIN_VBAT_READ
     // battery read support
     pinMode(PIN_VBAT_READ, INPUT);
-   #if ESP_ARDUINO_VERSION_MAJOR < 3
     adcAttachPin(PIN_VBAT_READ);
-   #endif
   #endif
     
   #ifdef P_LORA_TX_LED
