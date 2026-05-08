@@ -107,8 +107,13 @@ void halt() {
 
 void setup() {
   Serial.begin(115200);
+  delay(2000);
+  Serial.println("[DBG] setup: enter");
+  Serial.flush();
 
   board.begin();
+  Serial.println("[DBG] setup: board.begin OK");
+  Serial.flush();
 
 #ifdef DISPLAY_CLASS
   DisplayDriver* disp = NULL;
@@ -124,14 +129,26 @@ void setup() {
 #endif
 
   if (!radio_init()) { halt(); }
+  Serial.println("[DBG] setup: radio_init OK");
+  Serial.flush();
 
   fast_rng.begin(radio_get_rng_seed());
+  Serial.println("[DBG] setup: rng OK");
+  Serial.flush();
+
+#ifdef WIFI_SSID
+  Serial.print("[DBG] WIFI_SSID literal: [");
+  Serial.print(WIFI_SSID);
+  Serial.println("]");
+  Serial.print("[DBG] WIFI_PWD length: ");
+  Serial.println(strlen(WIFI_PWD));
+  Serial.flush();
+#endif
 
 #if defined(NRF52_PLATFORM) || defined(STM32_PLATFORM)
   InternalFS.begin();
   #if defined(QSPIFLASH)
     if (!QSPIFlash.begin()) {
-      // debug output might not be available at this point, might be too early. maybe should fall back to InternalFS here?
       MESH_DEBUG_PRINTLN("CustomLFS_QSPIFlash: failed to initialize");
     } else {
       MESH_DEBUG_PRINTLN("CustomLFS_QSPIFlash: initialized successfully");
@@ -183,8 +200,16 @@ void setup() {
   #endif
     the_mesh.startInterface(serial_interface);
 #elif defined(ESP32)
+  Serial.println("[DBG] setup: before SPIFFS.begin");
+  Serial.flush();
   SPIFFS.begin(true);
+  Serial.println("[DBG] setup: SPIFFS OK");
+  Serial.flush();
+
   store.begin();
+  Serial.println("[DBG] setup: store.begin OK");
+  Serial.flush();
+
   the_mesh.begin(
     #ifdef DISPLAY_CLASS
         disp != NULL
@@ -192,11 +217,21 @@ void setup() {
         false
     #endif
   );
+  Serial.println("[DBG] setup: the_mesh.begin OK");
+  Serial.flush();
 
 #ifdef WIFI_SSID
   board.setInhibitSleep(true);   // prevent sleep when WiFi is active
+  Serial.println("[DBG] setup: setInhibitSleep OK");
+  Serial.flush();
+
   WiFi.begin(WIFI_SSID, WIFI_PWD);
+  Serial.println("[DBG] setup: WiFi.begin called");
+  Serial.flush();
+
   serial_interface.begin(TCP_PORT);
+  Serial.println("[DBG] setup: TCP serial_interface.begin OK");
+  Serial.flush();
 #elif defined(BLE_PIN_CODE)
   serial_interface.begin(BLE_NAME_PREFIX, the_mesh.getNodePrefs()->node_name, the_mesh.getBLEPin());
 #elif defined(SERIAL_RX)
@@ -207,11 +242,15 @@ void setup() {
   serial_interface.begin(Serial);
 #endif
   the_mesh.startInterface(serial_interface);
+  Serial.println("[DBG] setup: startInterface OK");
+  Serial.flush();
 #else
   #error "need to define filesystem"
 #endif
 
   sensors.begin();
+  Serial.println("[DBG] setup: sensors OK - DONE");
+  Serial.flush();
 
 #if ENV_INCLUDE_GPS == 1
   the_mesh.applyGpsPrefs();
