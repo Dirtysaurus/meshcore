@@ -17,12 +17,24 @@ AutoDiscoverRTCClock rtc_clock(fallback_clock);
 SensorManager sensors;
 
 bool radio_init() {
+  Serial.begin(115200);
+  delay(3000);  // počkáme až se USB CDC enumeruje
+  Serial.println("[DBG] radio_init: start");
+
   fallback_clock.begin();
+  Serial.println("[DBG] radio_init: fallback_clock OK");
+
   rtc_clock.begin(Wire);
+  Serial.println("[DBG] radio_init: rtc_clock OK");
 
 #if defined(P_LORA_SCLK)
+  Serial.println("[DBG] radio_init: starting SPI");
   spi.begin(P_LORA_SCLK, P_LORA_MISO, P_LORA_MOSI);
-  return radio.std_init(&spi);
+  Serial.println("[DBG] radio_init: SPI started, calling std_init");
+  bool ok = radio.std_init(&spi);
+  Serial.print("[DBG] radio_init: std_init returned ");
+  Serial.println(ok ? "OK" : "FAIL");
+  return ok;
 #else
   return radio.std_init();
 #endif
